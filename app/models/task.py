@@ -15,7 +15,7 @@ class Task(db.Model):
             "id": self.id,
             "title": self.title,
             "description": self.description,
-            "is_complete": False,
+            "is_complete": self.completed_at is not None
         }
 
     @staticmethod
@@ -24,7 +24,6 @@ class Task(db.Model):
             raise KeyError("title")
         if "description" not in data:
             raise KeyError("description")
-    
         return Task(
                 title=data["title"],
                 description=data["description"],
