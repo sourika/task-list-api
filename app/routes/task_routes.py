@@ -1,6 +1,7 @@
 from flask import Blueprint, Response, abort, make_response, request
 from app.models.task import Task
 from ..db import db
+from sqlalchemy import asc, desc
 
 tasks_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
 
@@ -46,25 +47,14 @@ def create_task():
 
 @tasks_bp.get("")
 def get_all_tasks():
-    query = db.select(Task).order_by(Task.id)
-    # title_param = request.args.get("title")
-    # if title_param:
-    #     query = query.where(Task.title.ilike(f"%{title_param}%"))
-    
-    # description_param = request.args.get("description")
-    # if description_param:
-    #     query = query.where(Task.description.ilike(f"%{description_param}%"))
-    
-    # query = query.order_by(Task.id)
-    # tasks = db.session.scalars(query)
-
-    # tasks_response = []
-    # for task in tasks:
-    #     tasks_response.append(task.to_dict())
-        
-    # return tasks_response
-
-
+    query = db.select(Task)
+    sort = request.args.get("sort")
+    if sort == "asc":
+        query = db.select(Task).order_by(Task.title.asc())
+    elif sort == "desc":
+        query = db.select(Task).order_by(Task.title.desc())
+    else:    
+        query = db.select(Task).order_by(Task.id)
     tasks = db.session.scalars(query).all()
     return [t.to_dict() for t in tasks], 200
 
