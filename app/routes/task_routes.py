@@ -11,6 +11,7 @@ SLACK_CHANNEL_ID = os.getenv("SLACK_CHANNEL_ID")
 
 bp = Blueprint("tasks", __name__, url_prefix="/tasks")
 
+
 def send_slack_message(text: str):
     if not SLACK_BOT_TOKEN or not SLACK_CHANNEL_ID:
         return
@@ -30,10 +31,12 @@ def send_slack_message(text: str):
     except Exception:
         pass
 
+
 @bp.post("")
 def create_task():
     request_body = request.get_json()
     return create_model(Task, request_body)
+
 
 @bp.get("")
 def get_all_tasks():
@@ -53,6 +56,7 @@ def get_one_task(task_id):
     task = validate_model(Task, task_id)
     return task.to_dict(), 200
 
+
 @bp.put("/<task_id>")
 def update_task(task_id):
     task = validate_model(Task, task_id)
@@ -65,6 +69,7 @@ def update_task(task_id):
     db.session.commit()
     return Response(status=204, mimetype="application/json")
 
+
 @bp.delete("/<task_id>")
 def delete_task(task_id):
     task = validate_model(Task, task_id)
@@ -72,13 +77,29 @@ def delete_task(task_id):
     db.session.commit()
     return Response(status=204, mimetype="application/json")
 
+
 @bp.patch("/<task_id>/mark_complete")
 def mark_complete(task_id):
     task = validate_model(Task, task_id)
-    task.completed_at = datetime.now()
-    db.session.commit()
+    if task.completed_at:
+        return Response(status=204, mimetype="application/json")
+    try:
+        task.completed_at = datetime.now()
+        
+        db.session.commit()
+    
+    except Exception as e:
+        db.session.rollback()
+        print(f"Database error on committing task {task_id}: {e}")
+        return Response(
+            '{"error": "Internal server error"}', 
+            status=500, 
+            mimetype="application/json"
+        )
+    
     send_slack_message(f"Someone just completed the task {task.title}")
     return Response(status=204, mimetype="application/json")
+
 
 @bp.patch("/<task_id>/mark_incomplete")
 def mark_incomplete(task_id):

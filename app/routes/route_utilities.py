@@ -21,7 +21,7 @@ def create_model(cls, model_data):
         return abort(make_response({"details": "Invalid data"}, 400))
     db.session.add(new_model)
     db.session.commit()
-    return make_response(new_model.to_dict(), 201) 
+    return new_model.to_dict(), 201
 
 
 def get_models_with_filters(cls, filters=None):

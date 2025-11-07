@@ -28,6 +28,7 @@ class Task(db.Model):
             task_as_dict["goal_id"] = self.goal_id
         return task_as_dict
 
+
     @classmethod
     def from_dict(cls, data: dict):
         if "title" not in data:
