@@ -30,12 +30,10 @@ def send_slack_message(text: str):
     except Exception:
         pass
 
-
 @bp.post("")
 def create_task():
     request_body = request.get_json()
     return create_model(Task, request_body)
-
 
 @bp.get("")
 def get_all_tasks():
@@ -55,7 +53,6 @@ def get_one_task(task_id):
     task = validate_model(Task, task_id)
     return task.to_dict(), 200
 
-
 @bp.put("/<task_id>")
 def update_task(task_id):
     task = validate_model(Task, task_id)
@@ -68,14 +65,12 @@ def update_task(task_id):
     db.session.commit()
     return Response(status=204, mimetype="application/json")
 
-
 @bp.delete("/<task_id>")
 def delete_task(task_id):
     task = validate_model(Task, task_id)
     db.session.delete(task)
     db.session.commit()
     return Response(status=204, mimetype="application/json")
-
 
 @bp.patch("/<task_id>/mark_complete")
 def mark_complete(task_id):
@@ -84,7 +79,6 @@ def mark_complete(task_id):
     db.session.commit()
     send_slack_message(f"Someone just completed the task {task.title}")
     return Response(status=204, mimetype="application/json")
-
 
 @bp.patch("/<task_id>/mark_incomplete")
 def mark_incomplete(task_id):

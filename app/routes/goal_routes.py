@@ -42,12 +42,26 @@ def delete_goal(goal_id):
 def create_task_with_goal(goal_id):
     goal = validate_model(Goal, goal_id)
     request_body = request.get_json()
-    request_body["goal_id"] = goal.id
-    return create_model(Task, request_body)
+    if not isinstance(request_body, dict) or "task_ids" not in request_body or not isinstance(request_body["task_ids"], list):
+        return abort(make_response({"details": "Invalid data"}, 400))
+    
+    task_ids = request_body["task_ids"]
 
+    tasks = []
+    for tid in task_ids:
+        task = validate_model(Task, tid)
+        tasks.append(task)
+    goal.tasks = tasks
+    db.session.commit()
+
+    return {"id": goal.id, "task_ids": task_ids}, 200
 
 @bp.get("/<goal_id>/tasks")
 def get_tasks_by_goal(goal_id):
     goal = validate_model(Goal, goal_id)
-    response = [task.to_dict() for task in goal.tasks]
+    response = {
+        "id": goal.id,
+        "title": goal.title,
+        "tasks": [task.to_dict() for task in goal.tasks],
+    }
     return response
