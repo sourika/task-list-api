@@ -17,6 +17,7 @@ class Goal(db.Model):
             "title": self.title,
         }
 
+
     @classmethod
     def from_dict(cls, data: dict):
         if "title" not in data:
